@@ -1,8 +1,11 @@
 package org.rsrg.resilientll;
 
+import io.vavr.collection.Vector;
+import org.rsrg.resilientll.util.Maybe;
 import org.rsrg.resilientll.util.Pair;
 
 import java.util.ArrayList;
+import java.util.function.Predicate;
 
 /** Encapsulates lexer related procedures and types. */
 public final class Lexer {
@@ -79,11 +82,8 @@ public final class Lexer {
         throw new UnsupportedOperationException("not done");
     }
 
-    public static Token[] lex(String text) {
-        return lex(new StringBuilder(text));
-    }
+    public static Vector<Token> lex(String text) {
 
-    private static Token[] lex(StringBuilder text) {
         var punctuation = new Pair<>("( ) { } = ; , : -> + - * /", new TokenKind[]{TokenKind.LParen, TokenKind.RParen
                 , TokenKind.LCurly, TokenKind.RCurly, TokenKind.Eq, TokenKind.Semi, TokenKind.Comma, TokenKind.Colon,
                 TokenKind.Arrow, TokenKind.Plus, TokenKind.Minus, TokenKind.Slash});
@@ -91,11 +91,29 @@ public final class Lexer {
         var keywords = new Pair<>("fn let return true false", new TokenKind[]{TokenKind.FnKeyword,
                 TokenKind.LetKeyword, TokenKind.ReturnKeyword, TokenKind.TrueKeyword, TokenKind.FalseKeyword});
 
-        var result = new ArrayList<Token>();
+        var result = Vector.<Token>empty();
 
         while (!text.isEmpty()) {
+            switch (trim(text, Character::isWhitespace)) {
+                case Maybe.Some(var rest) -> {
+                    text = rest;
+                    continue;
+                }
+                default -> {}
+            }
+            var text_orig =  
+        } return result;
+    }
 
+    private static Maybe<String> trim(String s, Predicate<Character> predicate) {
+        int index = 0;
+        while (index < s.length() && !predicate.test(s.charAt(index))) {
+            index++;
         }
-
+        if (index == 0) {
+            return Maybe.none();
+        } else {
+            return Maybe.of(s.substring(index));
+        }
     }
 }
