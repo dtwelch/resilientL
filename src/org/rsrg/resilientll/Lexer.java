@@ -45,12 +45,22 @@ public final class Lexer {
     }
 
     public static ArrayList<Token> lex(String text) {
-        var punctuation = new Pair<>("( ) { } = ; , : -> + - * /",
-                new TokenKind[]{TokenKind.LParen, TokenKind.RParen
-                        , TokenKind.LCurly, TokenKind.RCurly, TokenKind.Eq, TokenKind.Semi, TokenKind.Comma,
-                        TokenKind.Colon,
-                        TokenKind.Arrow, TokenKind.Plus, TokenKind.Minus, TokenKind.Slash});
+        return lex(new StringBuilder(text));
+    }
 
-        
+    private static ArrayList<Token> lex(StringBuilder text) {
+        var punctuation = new Pair<>("( ) { } = ; , : -> + - * /", new TokenKind[]{TokenKind.LParen, TokenKind.RParen
+                , TokenKind.LCurly, TokenKind.RCurly, TokenKind.Eq, TokenKind.Semi, TokenKind.Comma, TokenKind.Colon,
+                TokenKind.Arrow, TokenKind.Plus, TokenKind.Minus, TokenKind.Slash});
+
+        var keywords = new Pair<>("fn let return true false", new TokenKind[]{TokenKind.FnKeyword,
+                TokenKind.LetKeyword, TokenKind.ReturnKeyword, TokenKind.TrueKeyword, TokenKind.FalseKeyword});
+
+        var result = new ArrayList<Token>();
+
+        while (!text.isEmpty()) {
+            
+        }
+
     }
 }
