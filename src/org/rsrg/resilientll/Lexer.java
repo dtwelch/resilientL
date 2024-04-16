@@ -107,46 +107,42 @@ public final class Lexer {
             // captures the state of text before it is potentially modified by
             // recognizing tokens
             String textOrig = text;
-            TokenKind  kind = null;
+            TokenKind kind = null;
 
-            for (int i = 0; i < punctuationSymbols.length && kind == null; i++) {
-                var symbol = punctuationSymbols[i];
-                switch (stripPrefix(text, symbol)) {
+            for (int i = 0; i < punctuationSymbols.length; i++) {
+                switch (stripPrefix(text, punctuationSymbols[i])) {
                     case Maybe.Some(var rest) -> {
                         text = rest;
                         kind = punctuationKinds[i];
+                        break;
                     }
-                    case Maybe.None<?> _ -> {}
+                    default -> {}
                 }
             }
-
             switch (trim(text, Character::isDigit)) {
                 case Maybe.Some(var rest) -> {
                     text = rest;
-
-                }
-            }
-            // check for punctuation and symbols
-            for (int i = 0; i < punctuationSymbols.length; i++) {
-                if (text.startsWith(punctuationSymbols[i])) {
-                    kind = punctuationKinds[i];
-                    // move past the matched punctuation sym
-                    text = text.substring(punctuationSymbols[i].length());
+                    kind = TokenKind.Int;
                     break;
                 }
+                default -> {}
             }
+            kind = TokenKind.ErrorToken;
 
-            // check for keywords if no punctuation matched
-            if (kind == null) {
-                for (int i = 0; i < keywordSymbols.length; i++) {
-                    if (text.startsWith(keywordSymbols[i])) {
-                        kind = keywordKinds[i];
-                        // move past the matched keyword sym
-                        text = text.substring(keywordSymbols[i].length());
-                    }
-                }
+            // invariant: text.length() < textOrig.length()
+        }
+
+        return result;
+    }
+
+    private static Maybe<Pair<TokenKind, String>> getTokenKind(String text, String[] symbols, TokenKind[] kinds) {
+        for (int i = 0; i < symbols.length; i++) {
+            if (text.startsWith(symbols[i])) {
+                return Maybe.of(new Pair<>(kinds[i], symbols[i]));
             }
-        } return result;
+        }
+        // Additional checks for integers and identifiers can go here.
+        return Maybe.none();
     }
 
     private static Maybe<String> stripPrefix(String text, String prefix) {
