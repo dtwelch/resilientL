@@ -111,7 +111,7 @@ public final class Lexer {
             // recognizing tokens
             String textOrig = text;
 
-            // (updated-text-post-match , kind)
+            // (updated-text-with-match-elided , just-matched-tokenkind)
             Pair<String, TokenKind> p =
                     getTokenKind(textOrig, punctuation, punctuationKinds);
             text = p.first();
@@ -119,6 +119,9 @@ public final class Lexer {
             // assert invariant: text.length() < textOrig.length()
 
             String tokenText = textOrig.substring(0, textOrig.length() - text.length());
+
+            // see if the string we just matched is actually a keyword (not just a user defined id/name)
+            // if we leave this loop we assume the kind will stay just general purpose Name
             if (kind == TokenKind.Name) {
                 for (int i = 0; i < keywords.length; i++) {
                     if (tokenText.equals(keywords[i])) {
@@ -127,7 +130,7 @@ public final class Lexer {
                     }
                 }
             }
-            result = result.append(new Token(kind, text));
+            result = result.append(new Token(kind, tokenText));
         }
 
         return result;
@@ -138,7 +141,9 @@ public final class Lexer {
 
         for (int i = 0; i < punctuationSymbols.length; i++) {
             switch (stripPrefix(text, punctuationSymbols[i])) {
-                case Maybe.Some(var rest) -> new Pair<>(rest, punctuationKinds[i]);
+                case Maybe.Some(var rest) -> {
+                    return new Pair<>(rest, punctuationKinds[i]);
+                }
                 default -> {
                 }
             }
@@ -146,7 +151,9 @@ public final class Lexer {
 
         // try to match an int digit
         switch (trim(text, Character::isDigit)) {
-            case Maybe.Some(var rest) -> new Pair<>(rest, TokenKind.Int);
+            case Maybe.Some(var rest) -> {
+                return new Pair<>(rest, TokenKind.Int);
+            }
             default -> {
             }
         }
@@ -155,7 +162,9 @@ public final class Lexer {
         // note: if it were just a number like 909 it would've matched in the
         // above int switch case and returned already
         switch (trim(text, Lexer::isNameChar)) {
-            case Maybe.Some(var rest) -> new Pair<>(rest, TokenKind.Name);
+            case Maybe.Some(var rest) -> {
+                return new Pair<>(rest, TokenKind.Name);
+            }
             default -> {
             }
         }
