@@ -1,5 +1,6 @@
 package org.rsrg.resilientll;
 
+import io.vavr.collection.Iterator;
 import io.vavr.collection.Vector;
 import org.rsrg.resilientll.tree.Tree;
 import org.rsrg.resilientll.tree.TreeKind;
@@ -24,6 +25,13 @@ public final class Parser {
         this.pos = 0;
         this.fuel = 256;
         this.events = Vector.empty();
+    }
+
+    public Tree buildTree() {
+        Iterator<Lexer.Token> tokens = this.tokens.iterator();
+        Vector<Event> events = this.events;
+
+        // 
     }
 
     public static Tree parse(String text) {

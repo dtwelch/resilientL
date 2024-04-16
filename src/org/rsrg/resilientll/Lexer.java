@@ -37,7 +37,6 @@ public final class Lexer {
         static Token mkInt(String name) {
             return new Token(TokenKind.Int, name);
         }
-
     }
 
     public static Vector<Token> lex(String text) {
