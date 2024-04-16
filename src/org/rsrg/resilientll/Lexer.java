@@ -87,8 +87,8 @@ public final class Lexer {
 
         String[] punctuationSymbols = {"(", ")", "{", "}", "=", ";", ",", ":", "->", "+", "-", "*", "/"};
         TokenKind[] punctuationKinds = {TokenKind.LParen, TokenKind.RParen, TokenKind.LCurly, TokenKind.RCurly,
-                TokenKind.Eq, TokenKind.Semi, TokenKind.Comma, TokenKind.Colon,
-                TokenKind.Arrow, TokenKind.Plus, TokenKind.Minus, TokenKind.Star, TokenKind.Slash};
+                TokenKind.Eq, TokenKind.Semi, TokenKind.Comma, TokenKind.Colon, TokenKind.Arrow, TokenKind.Plus,
+                TokenKind.Minus, TokenKind.Star, TokenKind.Slash};
 
         String[] keywordSymbols = {"fn", "let", "return", "true", "false"};
         TokenKind[] keywordKinds = {TokenKind.FnKeyword, TokenKind.LetKeyword, TokenKind.ReturnKeyword,
@@ -97,52 +97,71 @@ public final class Lexer {
         var result = Vector.<Token>empty();
 
         while (!text.isEmpty()) {
+
+            // consume any leading whitespace
             switch (trim(text, Character::isWhitespace)) {
                 case Maybe.Some(var rest) -> {
                     text = rest;
                     continue;
                 }
-                default -> {}
+                default -> {
+                }
             }
             // captures the state of text before it is potentially modified by
             // recognizing tokens
             String textOrig = text;
-            TokenKind kind = null;
 
-            for (int i = 0; i < punctuationSymbols.length; i++) {
-                switch (stripPrefix(text, punctuationSymbols[i])) {
-                    case Maybe.Some(var rest) -> {
-                        text = rest;
-                        kind = punctuationKinds[i];
-                        break;
-                    }
-                    default -> {}
+            // (match kind, updated text-post-match)
+            Pair<String, TokenKind> p =
+                    getTokenKind(textOrig, punctuationSymbols, punctuationKinds);
+            text = p.first();
+            TokenKind kind = p.second();
+            // assert invariant: text.length() < textOrig.length()
+
+            String tokenText = textOrig.substring(0, textOrig.length() - text.length());
+            if (kind == TokenKind.Name) {
+                for (int i = 0; i < keywordSymbols.length; i++) {
+
                 }
             }
-            switch (trim(text, Character::isDigit)) {
-                case Maybe.Some(var rest) -> {
-                    text = rest;
-                    kind = TokenKind.Int;
-                    break;
-                }
-                default -> {}
-            }
-            kind = TokenKind.ErrorToken;
-
-            // invariant: text.length() < textOrig.length()
         }
 
         return result;
     }
 
-    private static Maybe<Pair<TokenKind, String>> getTokenKind(String text, String[] symbols, TokenKind[] kinds) {
-        for (int i = 0; i < symbols.length; i++) {
-            if (text.startsWith(symbols[i])) {
-                return Maybe.of(new Pair<>(kinds[i], symbols[i]));
+    private static Pair<String, TokenKind> getTokenKind(String text, String[] punctuationSymbols,
+                                                        TokenKind[] punctuationKinds) {
+
+        for (int i = 0; i < punctuationSymbols.length; i++) {
+            switch (stripPrefix(text, punctuationSymbols[i])) {
+                case Maybe.Some(var rest) -> new Pair<>(rest, punctuationKinds[i]);
+                default -> {
+                }
             }
         }
-        // Additional checks for integers and identifiers can go here.
-        return Maybe.none();
+        switch (trim(text, Character::isDigit)) {
+            case Maybe.Some(var rest) -> new Pair<>(rest, TokenKind.Int);
+            default -> {
+            }
+        }
+        switch (trim(text, Lexer::isNameChar)) {
+            case Maybe.Some(var rest) -> new Pair<>(rest, TokenKind.Name);
+            default -> {
+            }
+        }
+        int errorIndex = text.indexOf(' ');
+        if (errorIndex == -1) {
+            errorIndex = text.length();
+        }
+        text = text.substring(errorIndex);
+        return new Pair<>(text, TokenKind.ErrorToken);
+    }
+
+    private static boolean isNameChar(char c) {
+        return switch (c) {
+            case '_' -> true;
+            default -> (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9');
+        };
     }
 
     private static Maybe<String> stripPrefix(String text, String prefix) {
