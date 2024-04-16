@@ -1,5 +1,6 @@
 package org.rsrg.resilientll;
 
+import io.vavr.collection.List;
 import io.vavr.collection.Vector;
 import org.rsrg.resilientll.util.Maybe;
 import org.rsrg.resilientll.util.Pair;
@@ -103,9 +104,28 @@ public final class Lexer {
                 }
                 default -> {}
             }
-            String currentText = text;
+            // captures the state of text before it is potentially modified by
+            // recognizing tokens
+            String textOrig = text;
             TokenKind  kind = null;
 
+            for (int i = 0; i < punctuationSymbols.length && kind == null; i++) {
+                var symbol = punctuationSymbols[i];
+                switch (stripPrefix(text, symbol)) {
+                    case Maybe.Some(var rest) -> {
+                        text = rest;
+                        kind = punctuationKinds[i];
+                    }
+                    case Maybe.None<?> _ -> {}
+                }
+            }
+
+            switch (trim(text, Character::isDigit)) {
+                case Maybe.Some(var rest) -> {
+                    text = rest;
+
+                }
+            }
             // check for punctuation and symbols
             for (int i = 0; i < punctuationSymbols.length; i++) {
                 if (text.startsWith(punctuationSymbols[i])) {
@@ -127,6 +147,13 @@ public final class Lexer {
                 }
             }
         } return result;
+    }
+
+    private static Maybe<String> stripPrefix(String text, String prefix) {
+        if (text.startsWith(prefix)) {
+            return Maybe.of(text.substring(prefix.length()));
+        }
+        return Maybe.none();
     }
 
     private static Maybe<String> trim(String s, Predicate<Character> predicate) {
