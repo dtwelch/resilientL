@@ -23,12 +23,6 @@ public final class Lexer {
         Name, Int
     }
 
-
-    public enum TreeKind {
-        ErrorTree, File, Fn, TypeExpr, ParamList, Param, Block, StmtLet, StmtReturn, StmtExpr, ExprLiteral, ExprName,
-        ExprParen, ExprBinary, ExprCall, ArgList, Arg
-    }
-
     public record Token(TokenKind kind, String text) {
 
         // static factories for certain kinds of tokens (errors, names and ints)
@@ -44,22 +38,6 @@ public final class Lexer {
             return new Token(TokenKind.Int, name);
         }
 
-    }
-
-    public record Tree(TreeKind kind, ArrayList<Child> children) {
-    }
-
-    public sealed interface Child {
-    }
-
-    public record CToken(Token t) implements Child {
-    }
-
-    public record CTree(Tree t) implements Child {
-    }
-
-    public static Tree parse(String text) {
-        throw new UnsupportedOperationException("not done");
     }
 
     public static Vector<Token> lex(String text) {
