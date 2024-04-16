@@ -85,12 +85,12 @@ public final class Lexer {
 
     public static Vector<Token> lex(String text) {
 
-        String[] punctuationSymbols = {"(", ")", "{", "}", "=", ";", ",", ":", "->", "+", "-", "*", "/"};
+        String[] punctuation = {"(", ")", "{", "}", "=", ";", ",", ":", "->", "+", "-", "*", "/"};
         TokenKind[] punctuationKinds = {TokenKind.LParen, TokenKind.RParen, TokenKind.LCurly, TokenKind.RCurly,
                 TokenKind.Eq, TokenKind.Semi, TokenKind.Comma, TokenKind.Colon, TokenKind.Arrow, TokenKind.Plus,
                 TokenKind.Minus, TokenKind.Star, TokenKind.Slash};
 
-        String[] keywordSymbols = {"fn", "let", "return", "true", "false"};
+        String[] keywords = {"fn", "let", "return", "true", "false"};
         TokenKind[] keywordKinds = {TokenKind.FnKeyword, TokenKind.LetKeyword, TokenKind.ReturnKeyword,
                 TokenKind.TrueKeyword, TokenKind.FalseKeyword};
 
@@ -111,19 +111,23 @@ public final class Lexer {
             // recognizing tokens
             String textOrig = text;
 
-            // (match kind, updated text-post-match)
+            // (updated-text-post-match , kind)
             Pair<String, TokenKind> p =
-                    getTokenKind(textOrig, punctuationSymbols, punctuationKinds);
+                    getTokenKind(textOrig, punctuation, punctuationKinds);
             text = p.first();
             TokenKind kind = p.second();
             // assert invariant: text.length() < textOrig.length()
 
             String tokenText = textOrig.substring(0, textOrig.length() - text.length());
             if (kind == TokenKind.Name) {
-                for (int i = 0; i < keywordSymbols.length; i++) {
-
+                for (int i = 0; i < keywords.length; i++) {
+                    if (tokenText.equals(keywords[i])) {
+                        kind = keywordKinds[i];
+                        break;
+                    }
                 }
             }
+            result = result.append(new Token(kind, text));
         }
 
         return result;
@@ -139,11 +143,17 @@ public final class Lexer {
                 }
             }
         }
+
+        // try to match an int digit
         switch (trim(text, Character::isDigit)) {
             case Maybe.Some(var rest) -> new Pair<>(rest, TokenKind.Int);
             default -> {
             }
         }
+
+        // try to match an alphanumeric identifier including _ (no whitespace) ...
+        // note: if it were just a number like 909 it would've matched in the
+        // above int switch case and returned already
         switch (trim(text, Lexer::isNameChar)) {
             case Maybe.Some(var rest) -> new Pair<>(rest, TokenKind.Name);
             default -> {
@@ -173,7 +183,7 @@ public final class Lexer {
 
     private static Maybe<String> trim(String s, Predicate<Character> predicate) {
         int index = 0;
-        while (index < s.length() && !predicate.test(s.charAt(index))) {
+        while (index < s.length() && predicate.test(s.charAt(index))) {
             index++;
         }
         if (index == 0) {
