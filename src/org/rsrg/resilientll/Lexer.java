@@ -84,12 +84,14 @@ public final class Lexer {
 
     public static Vector<Token> lex(String text) {
 
-        var punctuation = new Pair<>("( ) { } = ; , : -> + - * /", new TokenKind[]{TokenKind.LParen, TokenKind.RParen
-                , TokenKind.LCurly, TokenKind.RCurly, TokenKind.Eq, TokenKind.Semi, TokenKind.Comma, TokenKind.Colon,
-                TokenKind.Arrow, TokenKind.Plus, TokenKind.Minus, TokenKind.Slash});
+        String[] punctuationSymbols = {"(", ")", "{", "}", "=", ";", ",", ":", "->", "+", "-", "*", "/"};
+        TokenKind[] punctuationKinds = {TokenKind.LParen, TokenKind.RParen, TokenKind.LCurly, TokenKind.RCurly,
+                TokenKind.Eq, TokenKind.Semi, TokenKind.Comma, TokenKind.Colon,
+                TokenKind.Arrow, TokenKind.Plus, TokenKind.Minus, TokenKind.Star, TokenKind.Slash};
 
-        var keywords = new Pair<>("fn let return true false", new TokenKind[]{TokenKind.FnKeyword,
-                TokenKind.LetKeyword, TokenKind.ReturnKeyword, TokenKind.TrueKeyword, TokenKind.FalseKeyword});
+        String[] keywordSymbols = {"fn", "let", "return", "true", "false"};
+        TokenKind[] keywordKinds = {TokenKind.FnKeyword, TokenKind.LetKeyword, TokenKind.ReturnKeyword,
+                TokenKind.TrueKeyword, TokenKind.FalseKeyword};
 
         var result = Vector.<Token>empty();
 
@@ -101,7 +103,29 @@ public final class Lexer {
                 }
                 default -> {}
             }
-            var text_orig =  
+            String currentText = text;
+            TokenKind  kind = null;
+
+            // check for punctuation and symbols
+            for (int i = 0; i < punctuationSymbols.length; i++) {
+                if (text.startsWith(punctuationSymbols[i])) {
+                    kind = punctuationKinds[i];
+                    // move past the matched punctuation sym
+                    text = text.substring(punctuationSymbols[i].length());
+                    break;
+                }
+            }
+
+            // check for keywords if no punctuation matched
+            if (kind == null) {
+                for (int i = 0; i < keywordSymbols.length; i++) {
+                    if (text.startsWith(keywordSymbols[i])) {
+                        kind = keywordKinds[i];
+                        // move past the matched keyword sym
+                        text = text.substring(keywordSymbols[i].length());
+                    }
+                }
+            }
         } return result;
     }
 
