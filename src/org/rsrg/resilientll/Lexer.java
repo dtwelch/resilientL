@@ -31,6 +31,10 @@ public final class Lexer {
 
     public record Token(TokenKind kind, String text) {
 
+        // static factories for certain kinds of tokens (errors, names and ints)
+        static Token mkErr(String text) {
+            return new Token(TokenKind.ErrorToken, text);
+        }
 
         static Token mkName(String name) {
             return new Token(TokenKind.Name, name);

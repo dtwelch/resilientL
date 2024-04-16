@@ -20,7 +20,7 @@ public class LexerTests {
 
     private final Lexer.Token LParen = new Lexer.Token(Lexer.TokenKind.LParen, "(");
     private final Lexer.Token RParen = new Lexer.Token(Lexer.TokenKind.RParen, ")");
-    private final Lexer.Token LCurly = new Lexer.Token(Lexer.TokenKind.RCurly, "{");
+    private final Lexer.Token LCurly = new Lexer.Token(Lexer.TokenKind.LCurly, "{");
     private final Lexer.Token RCurly = new Lexer.Token(Lexer.TokenKind.RCurly, "}");
     private final Lexer.Token Eq = new Lexer.Token(Lexer.TokenKind.Eq, "=");
     private final Lexer.Token Semi = new Lexer.Token(Lexer.TokenKind.Semi, ";");
@@ -32,9 +32,8 @@ public class LexerTests {
     private final Lexer.Token Star = new Lexer.Token(Lexer.TokenKind.Star, "*");
     private final Lexer.Token Slash = new Lexer.Token(Lexer.TokenKind.Slash, "/");
 
-    @Test public void test01() {
-        var expected = Vector.of(Fn, Lexer.Token.mkName("f"), LParen, RParen,
-                LCurly, RCurly);
+    @Test public void testBasicFnHeader() {
+        var expected = Vector.of(Fn, Lexer.Token.mkName("f"), LParen, RParen, LCurly, RCurly);
         var result = Lexer.lex("fn f() { }");
         assertEquals(expected, result);
     }
@@ -58,17 +57,27 @@ public class LexerTests {
     }
 
     @Test public void testFunctionDeclaration() {
-        var expected = Vector.of(Fn, Lexer.Token.mkName("main"), LParen, RParen,
-                LCurly, RCurly);
+        var expected = Vector.of(Fn, Lexer.Token.mkName("main"), LParen, RParen, LCurly, RCurly);
         var result = Lexer.lex("fn main() {}");
         assertEquals(expected, result);
     }
 
     @Test public void testVariablesAndOperations() {
-        var expected = Vector.of(Lexer.Token.mkName("x"), Eq, Lexer.Token.mkInt("10"), Semi,
-                Lexer.Token.mkName("y"), Eq, Lexer.Token.mkName("x"), Plus,
-                Lexer.Token.mkInt("20"), Semi);
+        var expected = Vector.of(Lexer.Token.mkName("x"), Eq, Lexer.Token.mkInt("10"), Semi, Lexer.Token.mkName("y"),
+                Eq, Lexer.Token.mkName("x"), Plus, Lexer.Token.mkInt("20"), Semi);
         var result = Lexer.lex("x = 10; y = x + 20;");
+        assertEquals(expected, result);
+    }
+
+    @Test public void testKeywordsAndIdentifiers() {
+        var expected = Vector.of(Let, Lexer.Token.mkName("value"), Eq, True, Semi);
+        var result = Lexer.lex("let value = true;");
+        assertEquals(expected, result);
+    }
+
+    @Test public void testErrorTokens() {
+        var expected = Vector.of(Lexer.Token.mkName("validName"), Lexer.Token.mkErr("#$%^"));
+        var result = Lexer.lex("validName #$%^");
         assertEquals(expected, result);
     }
 }
