@@ -31,7 +31,8 @@ public final class Parser {
         Iterator<Lexer.Token> tokens = this.tokens.iterator();
         Vector<Event> events = this.events;
 
-        // 
+        // !events.isEmpty() && events.get(events.size() - 1) == Event.Close
+
     }
 
     public static Tree parse(String text) {
