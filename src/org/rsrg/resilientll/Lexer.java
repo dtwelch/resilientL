@@ -145,6 +145,11 @@ public final class Lexer {
         return Maybe.none();
     }
 
+    /**
+     * Trims some number of characters off the front of {@code s} while
+     * {@code predicate} is satisfied; {@link Maybe.None} is returned if no
+     * chars are trimmed off {@code s}.
+     */
     private static Maybe<String> trim(String s, Predicate<Character> predicate) {
         int index = 0;
         while (index < s.length() && predicate.test(s.charAt(index))) {
