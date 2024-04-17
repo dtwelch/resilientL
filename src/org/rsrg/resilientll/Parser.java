@@ -30,10 +30,46 @@ public final class Parser {
         this.events = Vector.empty();
     }
 
+    public Tree buildTree() {
+        /*Iterator<Lexer.Token> tokens = this.tokens.iterator();
+        Vector<Event> events = this.events;
+
+        // !events.isEmpty() && events.get(events.size() - 1) == Event.Close
+        List<Tree> stack = List.empty();
+        for (Event event : events) {
+            switch (event) {
+                case Open(var kind) -> {
+                    stack = stack.append(new Tree(kind, Vector.empty())) ;
+                }
+                case Close _ -> {
+                    //stack = stack.append(new Tree())
+                }
+                case Advance _ -> {
+
+                }
+            }
+        }*/
+        throw new UnsupportedOperationException("not done");
+    }
+
     public MarkOpened open() {
        var mark = new MarkOpened(events.length());
        events = events.append(new Open(TreeKind.ErrorTree));
        return mark;
+    }
+
+    public MarkOpened openBefore(MarkClosed m) {
+        var mark = new MarkOpened(m.index);
+        events = events.insert(m.index, new Open(TreeKind.ErrorTree));
+        return mark;
+    }
+
+    public MarkClosed close(MarkOpened m, TreeKind kind) {
+
+    }
+
+    public boolean eof() {
+        return pos == tokens.length();
     }
 
     /**
@@ -59,35 +95,11 @@ public final class Parser {
     // enumSet is a very efficient set implementation designed for storing
     // enum values... update: guess normal old bitfields are orders of magnitude
     // faster (according to): https://nullprogram.com/blog/2021/04/23/
+    // update, bad benchmark in above it seems: https://nihathrael.github.io/blog/enumset-benchmark/
     public boolean atAny(EnumSet<Lexer.TokenKind> kinds) {
        return kinds.contains(this.nth(0));
     }
 
-    public boolean eof() {
-        return pos == tokens.length();
-    }
-
-    public Tree buildTree() {
-        Iterator<Lexer.Token> tokens = this.tokens.iterator();
-        Vector<Event> events = this.events;
-
-        // !events.isEmpty() && events.get(events.size() - 1) == Event.Close
-        List<Tree> stack = List.empty();
-        for (Event event : events) {
-            switch (event) {
-                case Open(var kind) -> {
-                   stack = stack.append(new Tree(kind, Vector.empty())) ;
-                }
-                case Close _ -> {
-                    //stack = stack.append(new Tree())
-                }
-                case Advance _ -> {
-
-                }
-            }
-        }
-        throw new UnsupportedOperationException("not done");
-    }
 
     public static Tree parse(String text) {
         var tokens = Lexer.lex(text);
