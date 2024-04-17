@@ -115,9 +115,23 @@ public final class Parser {
     }
 
     private static void file(Parser p) {
+        // signal document open:
+        // File
+        //
         MarkOpened m = p.open();
+
+        // next, now that the document (File rule in the ungrammar) is open,
+        // we are free to consume all tokens until we reach EOF. BUT since the
+        // ungrammar specifies/allows only Fn defs at the top level, we expect
+        // only FnKeyWords to appear in the token stream, and error out otherwise
+        // placing presumably some error event into the stream? or just skipping
+        // past entirely.
         while (!p.eof()) {
-            if (p.)
+            if (p.at(Lexer.TokenKind.FnKeyword)) {
+
+            } else {
+               p.ad
+            }
         }
     }
 
