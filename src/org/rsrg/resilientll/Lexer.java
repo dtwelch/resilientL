@@ -13,6 +13,8 @@ public final class Lexer {
     private Lexer() {
     }
 
+
+
     public enum TokenKind {
         ErrorToken, Eof,
 

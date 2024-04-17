@@ -1,7 +1,5 @@
 package org.rsrg.resilientll;
 
-import io.vavr.collection.Iterator;
-import io.vavr.collection.List;
 import io.vavr.collection.Vector;
 import org.rsrg.resilientll.tree.Tree;
 import org.rsrg.resilientll.tree.TreeKind;
@@ -19,9 +17,11 @@ public final class Parser {
 
     private Vector<Event> events;
 
-    public record MarkOpened(int index) {}
+    public record MarkOpened(int index) {
+    }
 
-    public record MarkClosed(int index) {}
+    public record MarkClosed(int index) {
+    }
 
     public Parser(Vector<Lexer.Token> tokens) {
         this.tokens = tokens;
@@ -30,10 +30,54 @@ public final class Parser {
         this.events = Vector.empty();
     }
 
+    public Tree buildTree() {
+        /*Iterator<Lexer.Token> tokens = this.tokens.iterator();
+        Vector<Event> events = this.events;
+
+        // !events.isEmpty() && events.get(events.size() - 1) == Event.Close
+        List<Tree> stack = List.empty();
+        for (Event event : events) {
+            switch (event) {
+                case Open(var kind) -> {
+                    stack = stack.append(new Tree(kind, Vector.empty())) ;
+                }
+                case Close _ -> {
+                    //stack = stack.append(new Tree())
+                }
+                case Advance _ -> {
+
+                }
+            }
+        }*/
+        throw new UnsupportedOperationException("not done");
+    }
+
     public MarkOpened open() {
-       var mark = new MarkOpened(events.length());
-       events = events.append(new Open(TreeKind.ErrorTree));
-       return mark;
+        var mark = new MarkOpened(events.length());
+        events = events.append(new Event.Open(TreeKind.ErrorTree));
+        return mark;
+    }
+
+    public MarkOpened openBefore(MarkClosed m) {
+        var mark = new MarkOpened(m.index);
+        events = events.insert(m.index, new Event.Open(TreeKind.ErrorTree));
+        return mark;
+    }
+
+    public MarkClosed close(MarkOpened m, TreeKind kind) {
+        events = events.update(m.index, new Event.Open(kind));
+        events = events.append(Event.Close.Instance);
+        return new MarkClosed(m.index);
+    }
+
+    public void advance() {
+        // assert !eof()
+        fuel = 256;
+        events = events.append(new Event.Advance())
+    }
+
+    public boolean eof() {
+        return pos == tokens.length();
     }
 
     /**
@@ -59,34 +103,9 @@ public final class Parser {
     // enumSet is a very efficient set implementation designed for storing
     // enum values... update: guess normal old bitfields are orders of magnitude
     // faster (according to): https://nullprogram.com/blog/2021/04/23/
+    // update, bad benchmark in above it seems: https://nihathrael.github.io/blog/enumset-benchmark/
     public boolean atAny(EnumSet<Lexer.TokenKind> kinds) {
-       return kinds.contains(this.nth(0));
-    }
-
-    public boolean eof() {
-        return pos == tokens.length();
-    }
-
-    public Tree buildTree() {
-        Iterator<Lexer.Token> tokens = this.tokens.iterator();
-        Vector<Event> events = this.events;
-
-        // !events.isEmpty() && events.get(events.size() - 1) == Event.Close
-        List<Tree> stack = List.empty();
-        for (Event event : events) {
-            switch (event) {
-                case Open(var kind) -> {
-                   stack = stack.append(new Tree(kind, Vector.empty())) ;
-                }
-                case Close _ -> {
-                    //stack = stack.append(new Tree())
-                }
-                case Advance _ -> {
-
-                }
-            }
-        }
-        throw new UnsupportedOperationException("not done");
+        return kinds.contains(this.nth(0));
     }
 
     public static Tree parse(String text) {
@@ -105,13 +124,12 @@ public final class Parser {
     // events
 
     public sealed interface Event {
+        enum Close implements Event {Instance}
+
+        enum Advance implements Event {Instance}
+
+        record Open(TreeKind kind) implements Event {
+        }
     }
-
-    record Open(TreeKind kind) implements Event {
-    }
-
-    enum Close implements Event {Instance}
-
-    enum Advance implements Event {Instance}
 
 }
