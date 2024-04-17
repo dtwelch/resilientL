@@ -1,7 +1,6 @@
 # resilientL
 
-Resilient LL parsing implementation using features of JDK22. The 
-parser and lexer are designed to be "IDE Amenable" -- targeting a small 
+A 'resilient LL' parser. The parser and lexer are designed to be "IDE Amenable" -- targeting a small
 language called ***L***.
 
 Follows [this](https://github.com/matklad/resilient-ll-parsing/tree/master)

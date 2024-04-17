@@ -32,6 +32,7 @@ public final class Parser {
         Vector<Event> events = this.events;
 
         // !events.isEmpty() && events.get(events.size() - 1) == Event.Close
+        Vector<Tree> stack = Vector.empty();
 
     }
 
