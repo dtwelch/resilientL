@@ -266,8 +266,8 @@ public final class Parser {
 
         // gpt:
         // the exprDelimited function is used to recognize and handle different
-        // kinds of atomic expressions are the building blocks for more complex
-        // expressions.
+        // kinds of atomic expressions that are the building blocks for more
+        // complex expressions.
         //
         // These building blocks include literals (like integers or booleans),
         // variable names, and parenthesized expressions. This is essential
@@ -275,6 +275,20 @@ public final class Parser {
         // a) start new expressions.
         // b) can be part of larger expression structures when combined with
         //      operators or function calls.
+
+        MarkClosed lhs = null;
+        switch (exprDelimited(p)) {
+            case Maybe.Some(var leftHand) -> {
+               lhs = leftHand;
+            }
+            default -> {
+                return;
+            }
+        }
+        // todo (1): function call syntax handling
+
+        // todo (2): associativity and precdence stuff
+
     }
 
     private static Maybe<MarkClosed> exprDelimited(Parser p) {
