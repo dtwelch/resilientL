@@ -74,6 +74,7 @@ public final class Parser {
         // assert !eof()
         fuel = 256;
         events = events.append(Event.Advance.Instance);
+        pos += 1;
     }
 
     public void advanceWithError(String error) {
@@ -99,9 +100,7 @@ public final class Parser {
             throw new IllegalStateException("parser is stuck");
         }
         fuel = fuel - 1;
-        return tokens.getOption(this.pos + lookahead)
-                .map(Lexer.Token::kind)
-                .getOrElse(Lexer.TokenKind.Eof);
+        return tokens.getOption(this.pos + lookahead).map(Lexer.Token::kind).getOrElse(Lexer.TokenKind.Eof);
     }
 
     public boolean at(Lexer.TokenKind kind) {
@@ -116,16 +115,35 @@ public final class Parser {
         return kinds.contains(this.nth(0));
     }
 
+    public boolean eat(Lexer.TokenKind kind) {
+        if (at(kind)) {
+            advance();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void expect(Lexer.TokenKind kind) {
+        if (eat(kind)) {
+            return;
+        }
+        System.err.println(STR."expected \{kind}");
+    }
+
     public static Tree parse(String text) {
         var tokens = Lexer.lex(text);
         var p = new Parser(tokens);
+        file(p);
         throw new UnsupportedOperationException("not done");
     }
 
     private static void file(Parser p) {
         // signal document open:
         // File
-        //
+        // (note we don't pass in the kind when we open ... sometimes it's
+        // possible to decide on the type of syntax node only after it is
+        // parsed)
         MarkOpened m = p.open();
 
         // next, now that the document (File rule in the ungrammar) is open,
@@ -136,12 +154,106 @@ public final class Parser {
         // past entirely.
         while (!p.eof()) {
             if (p.at(Lexer.TokenKind.FnKeyword)) {
-
+                func(p);
             } else {
-               p.advance();
+                p.advanceWithError("expected a function");
             }
         }
+        p.close(m, TreeKind.File);
     }
+
+    // rule for parsing function defs at the top level of a file
+    // precondition: p.at(FnKeyword) == true
+    private static void func(Parser p) {
+        // assertion p.at(FnKeyword) != false
+
+        MarkOpened m = p.open();
+        p.expect(Lexer.TokenKind.FnKeyword);
+        p.expect(Lexer.TokenKind.Name);
+        if (p.at(Lexer.TokenKind.LParen)) {
+            paramList(p);
+        }
+        if (p.eat(Lexer.TokenKind.Arrow)) {
+            typeExpr(p);
+        }
+    }
+
+    private static final EnumSet<Lexer.TokenKind> ParamListRecoverSet = EnumSet.of(Lexer.TokenKind.FnKeyword,
+            Lexer.TokenKind.LCurly);
+
+    private static void paramList(Parser p) {
+        // assert p.at(LParen)
+        MarkOpened m = p.open();
+        p.expect(Lexer.TokenKind.LParen);
+        while (!p.at(Lexer.TokenKind.RParen) && !p.eof()) {
+
+            // if (p.at(Name)) {
+            //      param(p)
+            // } else {
+            if (p.atAny(ParamListRecoverSet)) {
+                break;
+            }
+            p.advanceWithError("expected parameter");
+            // }
+        }
+        p.expect(Lexer.TokenKind.RParen);
+        p.close(m, TreeKind.ParamList);
+    }
+
+    private static void param(Parser p) {
+        // assert p.at(Name)
+    }
+
+    private static void typeExpr(Parser p) {
+        MarkOpened m = p.open();
+        p.expect(Lexer.TokenKind.Name);
+        p.close(m, TreeKind.TypeExpr);
+    }
+
+    private static final EnumSet<Lexer.TokenKind> StmtRecover = EnumSet.of(Lexer.TokenKind.FnKeyword);
+
+    private static final EnumSet<Lexer.TokenKind> ExprFirst = EnumSet.of(Lexer.TokenKind.Int,
+            Lexer.TokenKind.TrueKeyword, Lexer.TokenKind.FalseKeyword, Lexer.TokenKind.Name, Lexer.TokenKind.LParen);
+
+    private static void block(Parser p) {
+        // assert p.at(LCurly)
+        MarkOpened m = p.open();
+        p.expect(Lexer.TokenKind.LCurly);
+
+        /*
+        Stmt =      StmtLet
+                |   StmtReturn
+                |   StmtExpr
+         */
+        while (!p.at(Lexer.TokenKind.RCurly) && !p.eof()) {
+            switch (p.nth(0)) {
+                case LetKeyword -> throw new UnsupportedOperationException("not done");
+                case ReturnKeyword -> throw new UnsupportedOperationException("not done");
+                default -> {
+                    if (p.atAny(ExprFirst)) {
+
+                    } else {
+                        if (p.atAny(StmtRecover)) {
+                            break;
+                        }
+                        p.advanceWithError("expected statement");
+                    }
+                }
+            }
+        }
+        p.expect(Lexer.TokenKind.RCurly);
+        p.close(m, TreeKind.Block);
+    }
+
+    public static void stmtExpr(Parser p) {
+        MarkOpened m = p.open();
+
+    }
+
+    private static void expr(Parser p) {
+
+    }
+
 
     // events
 
