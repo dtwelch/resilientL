@@ -232,7 +232,7 @@ public final class Parser {
                 case ReturnKeyword -> throw new UnsupportedOperationException("not done");
                 default -> {
                     if (p.atAny(ExprFirst)) {
-
+                        stmtExpr(p);
                     } else {
                         if (p.atAny(StmtRecover)) {
                             break;
