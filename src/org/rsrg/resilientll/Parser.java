@@ -3,6 +3,7 @@ package org.rsrg.resilientll;
 import io.vavr.collection.Vector;
 import org.rsrg.resilientll.tree.Tree;
 import org.rsrg.resilientll.tree.TreeKind;
+import org.rsrg.resilientll.util.Maybe;
 
 import java.util.EnumSet;
 
@@ -245,15 +246,60 @@ public final class Parser {
         p.close(m, TreeKind.Block);
     }
 
+    // StmtExpr = Expr ';'
     public static void stmtExpr(Parser p) {
         MarkOpened m = p.open();
-
+        expr(p);
+        p.expect(Lexer.TokenKind.Semi);
+        p.close(m, TreeKind.StmtExpr);
     }
 
+    // just doing for now
+    // Expr ::=
+    //   LiteralExpr
+    //   NameExpr
     private static void expr(Parser p) {
-
+        exprRec(p, Lexer.TokenKind.Eof);
     }
 
+    private static void exprRec(Parser p, Lexer.TokenKind left) {
+
+        // gpt:
+        // the exprDelimited function is used to recognize and handle different
+        // kinds of atomic expressions are the building blocks for more complex
+        // expressions.
+        //
+        // These building blocks include literals (like integers or booleans),
+        // variable names, and parenthesized expressions. This is essential
+        // because these elements:
+        // a) start new expressions.
+        // b) can be part of larger expression structures when combined with
+        //      operators or function calls.
+    }
+
+    private static Maybe<MarkClosed> exprDelimited(Parser p) {
+        Maybe<MarkClosed> resultMaybe = switch (p.nth(0)) {
+            case TrueKeyword, FalseKeyword, Int -> {
+                var m = p.open();
+                p.advance();
+                yield Maybe.of(p.close(m, TreeKind.ExprLiteral));
+            }
+            case Name -> {
+                var m = p.open();
+                p.advance();
+                yield Maybe.of(p.close(m, TreeKind.ExprName));
+            }
+            case LParen -> {
+                var m = p.open();
+                p.expect(Lexer.TokenKind.LParen);
+                expr(p);
+                p.expect(Lexer.TokenKind.RParen);
+                yield Maybe.of(p.close(m, TreeKind.ExprParen));
+            }
+            default -> Maybe.none();
+        };
+        return resultMaybe;
+    }
 
     // events
 
