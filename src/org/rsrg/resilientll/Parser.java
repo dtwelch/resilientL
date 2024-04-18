@@ -73,7 +73,15 @@ public final class Parser {
     public void advance() {
         // assert !eof()
         fuel = 256;
-        events = events.append(new Event.Advance())
+        events = events.append(Event.Advance.Instance);
+    }
+
+    public void advanceWithError(String error) {
+        MarkOpened m = this.open();
+        // todo: error reporting
+        System.err.println(error);
+        this.advance();
+        this.close(m, TreeKind.ErrorTree);
     }
 
     public boolean eof() {
@@ -130,7 +138,7 @@ public final class Parser {
             if (p.at(Lexer.TokenKind.FnKeyword)) {
 
             } else {
-               p.ad
+               p.advance();
             }
         }
     }

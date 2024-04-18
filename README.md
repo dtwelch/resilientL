@@ -1,6 +1,6 @@
 # resilientL
 
-A 'resilient LL' parser. The parser and lexer are designed to be "IDE Amenable" -- targeting a small
+This repo contains a 'resilient LL' parser and lexer. The parser and lexer are designed to be "IDE Amenable" -- targeting a small
 language called ***L***.
 
 Follows [this](https://github.com/matklad/resilient-ll-parsing/tree/master)
