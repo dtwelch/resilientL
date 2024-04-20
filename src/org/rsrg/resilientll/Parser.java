@@ -177,6 +177,7 @@ public final class Parser {
         if (p.eat(Lexer.TokenKind.Arrow)) {
             typeExpr(p);
         }
+        p.close(m, TreeKind.Fn);
     }
 
     private static final EnumSet<Lexer.TokenKind> ParamListRecoverSet = EnumSet.of(Lexer.TokenKind.FnKeyword,
