@@ -1,11 +1,12 @@
 # resilientL
 
-This repo contains a 'resilient LL' parser and lexer. The parser and lexer are designed to be "IDE Amenable" -- targeting a small
+This repo contains a 'resilient LL' parser and lexer. The parser and lexer are designed to be "IDE Amenable" --
+targeting a small
 language called ***L***.
 
-Follows [this](https://github.com/matklad/resilient-ll-parsing/tree/master)
-original blog post: https://matklad.github.io/2023/05/21/resilient-ll-parsing-tutorial.html
-(a rust analyzer developer)
+Follows notes from a rust-analyzer
+developer documented [here]( https://matklad.github.io/2023/05/21/resilient-ll-parsing-tutorial.html).
+This [repo]( https://github.com/matklad/resilient-ll-parsing/tree/master) contains the original rust implementation.
 
 ### Ungrammar (regex-style BNF) for language *L*
 
