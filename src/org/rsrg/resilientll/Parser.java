@@ -177,6 +177,8 @@ public final class Parser {
         if (p.eat(Lexer.TokenKind.Arrow)) {
             typeExpr(p);
         }
+
+        // todo: block if (p.at(LCurly)) { block(p); }
         p.close(m, TreeKind.Fn);
     }
 
