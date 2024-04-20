@@ -120,7 +120,8 @@ public final class Parser {
         if (at(kind)) {
             advance();
             return true;
-        } else {
+        }
+        else {
             return false;
         }
     }
@@ -150,13 +151,15 @@ public final class Parser {
         // next, now that the document (File rule in the ungrammar) is open,
         // we are free to consume all tokens until we reach EOF. BUT since the
         // ungrammar specifies/allows only Fn defs at the top level, we expect
-        // only FnKeyWords to appear in the token stream, and error out otherwise
+        // only FnKeyWords to appear in the token stream, and error out
+        // otherwise
         // placing presumably some error event into the stream? or just skipping
         // past entirely.
         while (!p.eof()) {
             if (p.at(Lexer.TokenKind.FnKeyword)) {
                 func(p);
-            } else {
+            }
+            else {
                 p.advanceWithError("expected a function");
             }
         }
@@ -182,8 +185,8 @@ public final class Parser {
         p.close(m, TreeKind.Fn);
     }
 
-    private static final EnumSet<Lexer.TokenKind> ParamListRecoverSet = EnumSet.of(Lexer.TokenKind.FnKeyword,
-            Lexer.TokenKind.LCurly);
+    private static final EnumSet<Lexer.TokenKind> ParamListRecoverSet =
+            EnumSet.of(Lexer.TokenKind.FnKeyword, Lexer.TokenKind.LCurly);
 
     private static void paramList(Parser p) {
         // assert p.at(LParen)
@@ -214,10 +217,13 @@ public final class Parser {
         p.close(m, TreeKind.TypeExpr);
     }
 
-    private static final EnumSet<Lexer.TokenKind> StmtRecover = EnumSet.of(Lexer.TokenKind.FnKeyword);
+    private static final EnumSet<Lexer.TokenKind> StmtRecover =
+            EnumSet.of(Lexer.TokenKind.FnKeyword);
 
-    private static final EnumSet<Lexer.TokenKind> ExprFirst = EnumSet.of(Lexer.TokenKind.Int,
-            Lexer.TokenKind.TrueKeyword, Lexer.TokenKind.FalseKeyword, Lexer.TokenKind.Name, Lexer.TokenKind.LParen);
+    private static final EnumSet<Lexer.TokenKind> ExprFirst =
+            EnumSet.of(Lexer.TokenKind.Int, Lexer.TokenKind.TrueKeyword,
+                    Lexer.TokenKind.FalseKeyword, Lexer.TokenKind.Name,
+                    Lexer.TokenKind.LParen);
 
     private static void block(Parser p) {
         // assert p.at(LCurly)
@@ -231,12 +237,15 @@ public final class Parser {
          */
         while (!p.at(Lexer.TokenKind.RCurly) && !p.eof()) {
             switch (p.nth(0)) {
-                case LetKeyword -> throw new UnsupportedOperationException("not done");
-                case ReturnKeyword -> throw new UnsupportedOperationException("not done");
+                case LetKeyword ->
+                        throw new UnsupportedOperationException("not done");
+                case ReturnKeyword ->
+                        throw new UnsupportedOperationException("not done");
                 default -> {
                     if (p.atAny(ExprFirst)) {
                         stmtExpr(p);
-                    } else {
+                    }
+                    else {
                         if (p.atAny(StmtRecover)) {
                             break;
                         }
@@ -282,7 +291,7 @@ public final class Parser {
         MarkClosed lhs = null;
         switch (exprDelimited(p)) {
             case Maybe.Some(var leftHand) -> {
-               lhs = leftHand;
+                lhs = leftHand;
             }
             default -> {
                 return;

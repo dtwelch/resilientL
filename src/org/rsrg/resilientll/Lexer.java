@@ -13,8 +13,6 @@ public final class Lexer {
     private Lexer() {
     }
 
-
-
     public enum TokenKind {
         ErrorToken, Eof,
 
@@ -95,7 +93,7 @@ public final class Lexer {
 
     private static Pair<String, TokenKind> matchNext(String text, String[] punctuationSymbols,
                                                      TokenKind[] punctuationKinds) {
-
+        // try to match some punctuation: ), (, {, }, etc
         for (int i = 0; i < punctuationSymbols.length; i++) {
             switch (stripPrefix(text, punctuationSymbols[i])) {
                 case Maybe.Some(var rest) -> {
@@ -106,7 +104,7 @@ public final class Lexer {
             }
         }
 
-        // try to match an int digit
+        // try to match a (potentially multiple-char) digit
         switch (trim(text, Character::isDigit)) {
             case Maybe.Some(var rest) -> {
                 return new Pair<>(rest, TokenKind.Int);
