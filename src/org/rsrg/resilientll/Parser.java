@@ -1,11 +1,18 @@
 package org.rsrg.resilientll;
 
+import io.vavr.collection.Iterator;
+import io.vavr.collection.List;
 import io.vavr.collection.Vector;
+import org.rsrg.resilientll.tree.Child;
 import org.rsrg.resilientll.tree.Tree;
 import org.rsrg.resilientll.tree.TreeKind;
 import org.rsrg.resilientll.util.Maybe;
+import org.rsrg.resilientll.util.VecUtil;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.EnumSet;
+import java.util.LinkedList;
 
 public final class Parser {
 
@@ -32,25 +39,43 @@ public final class Parser {
     }
 
     public Tree buildTree() {
-        /*Iterator<Lexer.Token> tokens = this.tokens.iterator();
+        Iterator<Lexer.Token> tokens = this.tokens.iterator();
         Vector<Event> events = this.events;
 
-        // !events.isEmpty() && events.get(events.size() - 1) == Event.Close
-        List<Tree> stack = List.empty();
+        // events.isNotEmpty() && events.get(events.size() - 1) == Event.Close
+        Deque<Tree> stack = new ArrayDeque<>();
+        // note: consider just using mutable Dequeu
         for (Event event : events) {
             switch (event) {
-                case Open(var kind) -> {
-                    stack = stack.append(new Tree(kind, Vector.empty())) ;
+                case Event.Open(var kind) -> {
+                    stack.push(new Tree(kind, Vector.empty()));
                 }
-                case Close _ -> {
-                    //stack = stack.append(new Tree())
-                }
-                case Advance _ -> {
+                case Event.Close _ -> {
+                    var pair = VecUtil.pop(stack);
+                    Tree tree = pair.first();
+                    stack = pair.second();
 
+                    // now update the stack's last/top Tree's child list with the most
+                    // recently popped tree
+                    Tree currTop = stack.last().withChild(new Child.CTree(tree));
+                    stack = pair.second().update(stack.length() - 1, currTop);
+                }
+                case Event.Advance _ -> {
+                    Lexer.Token token = tokens.next();
+
+                    // now update the stack's last/top Tree's child list with the most
+                    // recently encountered token
+                    Tree currTop = stack.last().withChild(new Child.CToken(token));
+                    stack = stack.update(stack.length() - 1, currTop);
                 }
             }
-        }*/
-        throw new UnsupportedOperationException("not done");
+        }
+        var popPair = VecUtil.pop(stack);
+        Tree tree = popPair.first();
+        stack = popPair.second();
+        // assert stack.isEmpty()
+        // assert tokens.hasNext() == false
+        return tree;
     }
 
     public MarkOpened open() {
@@ -120,8 +145,7 @@ public final class Parser {
         if (at(kind)) {
             advance();
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -158,8 +182,7 @@ public final class Parser {
         while (!p.eof()) {
             if (p.at(Lexer.TokenKind.FnKeyword)) {
                 func(p);
-            }
-            else {
+            } else {
                 p.advanceWithError("expected a function");
             }
         }
@@ -187,8 +210,8 @@ public final class Parser {
         p.close(m, TreeKind.Fn);
     }
 
-    private static final EnumSet<Lexer.TokenKind> ParamListRecoverSet =
-            EnumSet.of(Lexer.TokenKind.FnKeyword, Lexer.TokenKind.LCurly);
+    private static final EnumSet<Lexer.TokenKind> ParamListRecoverSet = EnumSet.of(Lexer.TokenKind.FnKeyword,
+            Lexer.TokenKind.LCurly);
 
     private static void paramList(Parser p) {
         // assert p.at(LParen)
@@ -219,13 +242,10 @@ public final class Parser {
         p.close(m, TreeKind.TypeExpr);
     }
 
-    private static final EnumSet<Lexer.TokenKind> StmtRecover =
-            EnumSet.of(Lexer.TokenKind.FnKeyword);
+    private static final EnumSet<Lexer.TokenKind> StmtRecover = EnumSet.of(Lexer.TokenKind.FnKeyword);
 
-    private static final EnumSet<Lexer.TokenKind> ExprFirst =
-            EnumSet.of(Lexer.TokenKind.Int, Lexer.TokenKind.TrueKeyword,
-                    Lexer.TokenKind.FalseKeyword, Lexer.TokenKind.Name,
-                    Lexer.TokenKind.LParen);
+    private static final EnumSet<Lexer.TokenKind> ExprFirst = EnumSet.of(Lexer.TokenKind.Int,
+            Lexer.TokenKind.TrueKeyword, Lexer.TokenKind.FalseKeyword, Lexer.TokenKind.Name, Lexer.TokenKind.LParen);
 
     private static void block(Parser p) {
         // assert p.at(LCurly)
@@ -239,15 +259,12 @@ public final class Parser {
          */
         while (!p.at(Lexer.TokenKind.RCurly) && !p.eof()) {
             switch (p.nth(0)) {
-                case LetKeyword ->
-                        throw new UnsupportedOperationException("not done");
-                case ReturnKeyword ->
-                        throw new UnsupportedOperationException("not done");
+                case LetKeyword -> throw new UnsupportedOperationException("not done");
+                case ReturnKeyword -> throw new UnsupportedOperationException("not done");
                 default -> {
                     if (p.atAny(ExprFirst)) {
                         stmtExpr(p);
-                    }
-                    else {
+                    } else {
                         if (p.atAny(StmtRecover)) {
                             break;
                         }
