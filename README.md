@@ -6,7 +6,7 @@ language called ***L***.
 
 Follows notes from a rust-analyzer
 developer documented [here]( https://matklad.github.io/2023/05/21/resilient-ll-parsing-tutorial.html).
-This [repo]( https://github.com/matklad/resilient-ll-parsing/tree/master) contains the original rust implementation.
+Original rust implementation [here]( https://github.com/matklad/resilient-ll-parsing/tree/master).
 
 ### Ungrammar (regex-style BNF) for language *L*
 
