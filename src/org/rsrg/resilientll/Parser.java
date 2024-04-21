@@ -162,8 +162,7 @@ public final class Parser {
         // signal document open:
         // File
         // (note we don't pass in the kind when we open ... sometimes it's
-        // possible to decide on the type of syntax node only after it is
-        // parsed)
+        // we can only decide on the type of syntax node after it is parsed)
         MarkOpened m = p.open();
 
         // next, now that the document (File rule in the ungrammar) is open,

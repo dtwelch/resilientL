@@ -7,6 +7,6 @@ public class ParserTests {
     @Test public void smokeTest01() {
         var text = "fn f(){ x; }";
         var p = Parser.parse(text);
-
+        System.out.println(p);
     }
 }
