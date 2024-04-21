@@ -1,18 +1,15 @@
 package org.rsrg.resilientll;
 
 import io.vavr.collection.Iterator;
-import io.vavr.collection.List;
 import io.vavr.collection.Vector;
 import org.rsrg.resilientll.tree.Child;
 import org.rsrg.resilientll.tree.Tree;
 import org.rsrg.resilientll.tree.TreeKind;
 import org.rsrg.resilientll.util.Maybe;
-import org.rsrg.resilientll.util.VecUtil;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.EnumSet;
-import java.util.LinkedList;
 
 public final class Parser {
 
@@ -44,35 +41,32 @@ public final class Parser {
 
         // events.isNotEmpty() && events.get(events.size() - 1) == Event.Close
         Deque<Tree> stack = new ArrayDeque<>();
-        // note: consider just using mutable Dequeu
+
         for (Event event : events) {
             switch (event) {
                 case Event.Open(var kind) -> {
                     stack.push(new Tree(kind, Vector.empty()));
                 }
                 case Event.Close _ -> {
-                    var pair = VecUtil.pop(stack);
-                    Tree tree = pair.first();
-                    stack = pair.second();
+                    Tree tree = stack.pop();
 
-                    // now update the stack's last/top Tree's child list with the most
-                    // recently popped tree
-                    Tree currTop = stack.last().withChild(new Child.CTree(tree));
-                    stack = pair.second().update(stack.length() - 1, currTop);
+                    // update the last entry of the stack to have a new child tree
+                    // then push this modified/copied node back on top
+                    Tree last = stack.pop();
+                    last = last.withChild(new Child.CTree(tree));
+                    stack.push(last);
                 }
                 case Event.Advance _ -> {
                     Lexer.Token token = tokens.next();
 
-                    // now update the stack's last/top Tree's child list with the most
-                    // recently encountered token
-                    Tree currTop = stack.last().withChild(new Child.CToken(token));
-                    stack = stack.update(stack.length() - 1, currTop);
+                    Tree last = stack.pop();
+                    last = last.withChild(new Child.CToken(token));
+                    stack.push(last);
                 }
             }
         }
-        var popPair = VecUtil.pop(stack);
-        Tree tree = popPair.first();
-        stack = popPair.second();
+        Tree tree = stack.pop();
+
         // assert stack.isEmpty()
         // assert tokens.hasNext() == false
         return tree;
