@@ -137,7 +137,7 @@ public final class Parser {
         var tokens = Lexer.lex(text);
         var p = new Parser(tokens);
         file(p);
-        throw new UnsupportedOperationException("not done");
+        return p.buildTree();
     }
 
     private static void file(Parser p) {
@@ -181,7 +181,9 @@ public final class Parser {
             typeExpr(p);
         }
 
-        // todo: block if (p.at(LCurly)) { block(p); }
+        if (p.at(Lexer.TokenKind.LCurly)) {
+            block(p);
+        }
         p.close(m, TreeKind.Fn);
     }
 
@@ -261,8 +263,10 @@ public final class Parser {
     // StmtExpr = Expr ';'
     public static void stmtExpr(Parser p) {
         MarkOpened m = p.open();
+
         expr(p);
         p.expect(Lexer.TokenKind.Semi);
+
         p.close(m, TreeKind.StmtExpr);
     }
 
@@ -330,6 +334,7 @@ public final class Parser {
     // events
 
     public sealed interface Event {
+
         enum Close implements Event {Instance}
 
         enum Advance implements Event {Instance}
