@@ -52,9 +52,19 @@ public final class Parser {
 
                     // update the last entry of the stack to have a new child tree
                     // then push this modified/copied node back on top
-                    Tree last = stack.pop();
-                    last = last.withChild(new Child.CTree(tree));
-                    stack.push(last);
+                    if (!stack.isEmpty()) {
+                        Tree last = stack.pop();
+                        last = last.withChild(new Child.CTree(tree));
+                        stack.push(last);
+                        continue;
+                    }
+                    // should be reachable on the last iteration...
+                    // this happens when we pop the top level file open event
+                    // (responding to final close event)
+                    switch (tree) {
+                        case Tree(TreeKind.File _, _) -> stack.push(tree);
+                        default -> throw new IllegalStateException("unexpected empty parse stack");
+                    }
                 }
                 case Event.Advance _ -> {
                     Lexer.Token token = tokens.next();
@@ -74,13 +84,13 @@ public final class Parser {
 
     public MarkOpened open() {
         var mark = new MarkOpened(events.length());
-        events = events.append(new Event.Open(TreeKind.ErrorTree));
+        events = events.append(new Event.Open(TreeKind.ErrorTree.Instance));
         return mark;
     }
 
     public MarkOpened openBefore(MarkClosed m) {
         var mark = new MarkOpened(m.index);
-        events = events.insert(m.index, new Event.Open(TreeKind.ErrorTree));
+        events = events.insert(m.index, new Event.Open(TreeKind.ErrorTree.Instance));
         return mark;
     }
 
@@ -102,7 +112,7 @@ public final class Parser {
         // todo: error reporting
         System.err.println(error);
         this.advance();
-        this.close(m, TreeKind.ErrorTree);
+        this.close(m, TreeKind.ErrorTree.Instance);
     }
 
     public boolean eof() {
@@ -179,7 +189,7 @@ public final class Parser {
                 p.advanceWithError("expected a function");
             }
         }
-        p.close(m, TreeKind.File);
+        p.close(m, TreeKind.File.Instance);
     }
 
     // rule for parsing function defs at the top level of a file
@@ -200,7 +210,7 @@ public final class Parser {
         if (p.at(Lexer.TokenKind.LCurly)) {
             block(p);
         }
-        p.close(m, TreeKind.Fn);
+        p.close(m, TreeKind.Fn.Instance);
     }
 
     private static final EnumSet<Lexer.TokenKind> ParamListRecoverSet = EnumSet.of(Lexer.TokenKind.FnKeyword,
@@ -222,7 +232,7 @@ public final class Parser {
             // }
         }
         p.expect(Lexer.TokenKind.RParen);
-        p.close(m, TreeKind.ParamList);
+        p.close(m, TreeKind.ParamList.Instance);
     }
 
     private static void param(Parser p) {
@@ -232,7 +242,7 @@ public final class Parser {
     private static void typeExpr(Parser p) {
         MarkOpened m = p.open();
         p.expect(Lexer.TokenKind.Name);
-        p.close(m, TreeKind.TypeExpr);
+        p.close(m, TreeKind.TypeExpr.Instance);
     }
 
     private static final EnumSet<Lexer.TokenKind> StmtRecover = EnumSet.of(Lexer.TokenKind.FnKeyword);
@@ -267,7 +277,7 @@ public final class Parser {
             }
         }
         p.expect(Lexer.TokenKind.RCurly);
-        p.close(m, TreeKind.Block);
+        p.close(m, TreeKind.Block.Instance);
     }
 
     // StmtExpr = Expr ';'
@@ -277,7 +287,7 @@ public final class Parser {
         expr(p);
         p.expect(Lexer.TokenKind.Semi);
 
-        p.close(m, TreeKind.StmtExpr);
+        p.close(m, TreeKind.StmtExpr.Instance);
     }
 
     // just doing for now
@@ -322,19 +332,19 @@ public final class Parser {
             case TrueKeyword, FalseKeyword, Int -> {
                 var m = p.open();
                 p.advance();
-                yield Maybe.of(p.close(m, TreeKind.ExprLiteral));
+                yield Maybe.of(p.close(m, TreeKind.ExprLiteral.Instance));
             }
             case Name -> {
                 var m = p.open();
                 p.advance();
-                yield Maybe.of(p.close(m, TreeKind.ExprName));
+                yield Maybe.of(p.close(m, TreeKind.ExprName.Instance));
             }
             case LParen -> {
                 var m = p.open();
                 p.expect(Lexer.TokenKind.LParen);
                 expr(p);
                 p.expect(Lexer.TokenKind.RParen);
-                yield Maybe.of(p.close(m, TreeKind.ExprParen));
+                yield Maybe.of(p.close(m, TreeKind.ExprParen.Instance));
             }
             default -> Maybe.none();
         };
