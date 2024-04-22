@@ -11,24 +11,19 @@ public record Tree(TreeKind kind, Vector<Child> children) {
 
     private void print(StringBuilder buf, int level) {
         var indent = " ".repeat(level);
-        buf.append(indent).append("Kind: ").append(kind).append("\n");
+        buf.append(indent).append(kind.getClass().getSimpleName()).append("\n");
 
         for (Child child : children) {
             switch (child) {
-                case Child.CToken(var token) ->
-                    buf.append(indent)
-                            .append("  '")
-                            .append(token.text())
-                            .append("'\n");
-                case Child.CTree(var tree) ->
-                    tree.print(buf, level + 1);
+                case Child.CToken(var token) -> buf.append(indent).append("  '").append(token.text()).append("'\n");
+                case Child.CTree(var tree) -> tree.print(buf, level + 1);
             }
         }
     }
 
-    @Override public String toString() {
+    /*@Override public String toString() {
         var sb = new StringBuilder();
         print(sb, 0);
         return sb.toString();
-    }
+    }*/
 }

@@ -2,6 +2,7 @@ package org.rsrg.resilientll.tree;
 
 /** Different kinds of syntax nodes in a Syntax Tree. */
 public sealed interface TreeKind {
+
     enum ErrorTree implements TreeKind {Instance}
 
     enum File implements TreeKind {Instance}
