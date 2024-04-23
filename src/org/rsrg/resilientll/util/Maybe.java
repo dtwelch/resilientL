@@ -1,10 +1,5 @@
 package org.rsrg.resilientll.util;
 
-// todo: prefer this to vavr's option for pattern matching purposes..
-//       will need to come up with some adaptor/utility fns for converting
-//       between vavr option and this type (since other ADTs that are part of
-//       vavr will still return the vavr.Option)
-
 import io.vavr.control.Option;
 
 import java.util.NoSuchElementException;
@@ -13,21 +8,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * A maybe/option type modeled after the one found in haskell.
- * <p>
- * We prefer this maybe class over vavr's {@link Option} as it
- * takes advantage of & provides clients the opportunity to use certain newer
- * parts of java (such as sealed interfaces, records, and pattern-matching).
- * <p>
- * Many of the vavr collections and apis make extensive use of Option. So this
- * sealed type functions then as a (hopefully temporary) 'real' option type
- * that supports pattern matching.
- * <p>
- * Users can call {@link Maybe#fromOpt(Option)} to convert a vavr option
- * instance to an equivalent {@link Maybe} instance.
- * <p>
- * Not sure what the future of the vavr library is (as of June 4, 2023) but it
- * doesn't seem to have an owner/maintainer currently..
+ * A maybe/option type modeled after the one found in haskell. Preferred this
+ * one to vavr's due to use of records and the ability to deconstruct in match
+ * expressions.
  */
 public sealed interface Maybe<A> {
 
@@ -106,9 +89,6 @@ public sealed interface Maybe<A> {
         }
     }
 
-    // remember: fmap is functorMap (not flatMap -- which would return an obj)
-    // really: since we're in java, would be better to probably just rename
-    // this 'map' as we're not/can't model functors realistically here`
     default <B> Maybe<B> map(Function<A, B> f) {
         Objects.requireNonNull(f, "fn is null");
 

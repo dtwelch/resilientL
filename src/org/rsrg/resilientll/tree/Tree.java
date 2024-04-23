@@ -21,9 +21,9 @@ public record Tree(TreeKind kind, Vector<Child> children) {
         }
     }
 
-    /*@Override public String toString() {
+    @Override public String toString() {
         var sb = new StringBuilder();
         print(sb, 0);
         return sb.toString();
-    }*/
+    }
 }

@@ -1,8 +1,7 @@
 # resilientL
 
-This repo contains a 'resilient LL' parser and lexer. The parser and lexer are designed to be "IDE Amenable" --
-targeting a small
-language called ***L***.
+Some experimentation with a resilient lexer and LL parser. The parser and lexer are designed to be "IDE Amenable" --
+targeting a small language called ***L***.
 
 Follows notes from a rust-analyzer
 developer documented [here]( https://matklad.github.io/2023/05/21/resilient-ll-parsing-tutorial.html).
