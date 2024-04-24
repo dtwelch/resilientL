@@ -7,6 +7,8 @@ Follows notes from a rust-analyzer
 developer documented [here]( https://matklad.github.io/2023/05/21/resilient-ll-parsing-tutorial.html).
 Original rust implementation [here]( https://github.com/matklad/resilient-ll-parsing/tree/master).
 
+> Update - 04/24/24: checkpointing this for now; lexer is pretty much there; parser code minimal; handles fn defns with no params and basic blocks consisting of a named statement expr
+
 ### Ungrammar (regex-style BNF) for language *L*
 
 ```antlr
