@@ -7,11 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LexerTests {
 
-    // some static constants for (positive) tests; note: the flix compiler
-    // does not have positive tests written the way we do here in this proj...
-    // rather they do them through their own languages @test annotation; seems
-    // like it requires one to be able to get all the way through the frontend + codegen
-    // before any positive tests can be run? seems.... dunno. hard?
+    // some static constants for (positive) tests
     private final Lexer.Token Fn = new Lexer.Token(Lexer.TokenKind.FnKeyword, "fn");
     private final Lexer.Token Let = new Lexer.Token(Lexer.TokenKind.LetKeyword, "let");
     private final Lexer.Token Return = new Lexer.Token(Lexer.TokenKind.ReturnKeyword, "return");
